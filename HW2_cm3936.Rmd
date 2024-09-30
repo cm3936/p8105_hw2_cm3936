@@ -8,14 +8,25 @@ output: github_document
 ```{r adding libraries}
 library(readxl)
 library(tidyverse)
+library(dplyr)
+library(readr)
+```
+janitor::clean_names(nyvtransit,))
+**Problem 1: NYC Transit Data**
+```{r reading in the data, results= 'hide'}
+nyvtransit = read_csv("subwaydata1.csv", 
+                       na = c("NA", ".", ""),
+                      col_types = cols(
+                         `Route8` = col_character(),
+                       `Route9` = col_character(),
+                     `Route10` = col_character(),
+                      `Route11` = col_character()))
+
+
+nyvtransit = janitor::clean_names(nyvtransit)
 ```
 
-**Problem 1: NYC Transit Data**
-```{r reading in the data, results='hide'}
-
-nyvtransit = read.csv("subwaydata1.csv") |>
-janitor::clean_names()
-
+```{r selecting and new vars}
 select(nyvtransit, line, station_name, station_latitude, station_longitude, route1:route11, entry, vending, entrance_type, ada)
 
 nyvtransit %>%
@@ -24,12 +35,13 @@ nyvtransit %>%
   )
 ```
 
-The data set contains various variables about the subway stops in the New York City subway stations and their locations. The variables include the line, station name, latitude and longitude, the route it runs on, whether it is compliant with the ADA, whether it travels north to south or east to west. The data set after my cleaning steps includes the line, name of the station, the latitude and longitude of the station, the routes, entry, vending and the type of entrance. My data cleaning steps include the cleaning up the names of the columns using the 'janitor' package, selecting specific variables to view, and changing the entry variable from a character to a logical variable. The remaining rows and columns are the stations and the variables: line, name of the station, the latitude and longitude of the station, the routes, entry, vending and the type of entrance, repectively. 
+The data set contains various variables about the subway stops in the New York City subway stations and their locations. The variables include the line, station name, latitude and longitude, the route it runs on, whether it is compliant with the ADA, whether it travels north to south or east to west. The data set after my cleaning steps includes the line, name of the station, the latitude and longitude of the station, the routes, entry, vending and the type of entrance. My data cleaning steps include the cleaning up the names of the columns using the 'janitor' package, removing the rows with missing variables, selecting specific variables to view, and changing the entry variable from a character to a logical variable. The remaining rows and columns are the stations and the variables: line, name of the station, the latitude and longitude of the station, the routes, entry, vending and the type of entrance, repectively. 
 
 **How many distinct stations are there?**
-```{r distinct stations, results='hide'}
+```{r distinct stations first, results= 'hide'}
 
 distinct(nyvtransit, .keep_all = FALSE)
+
 ```
 
 There are 1868 distinct train stations in NYC. 
@@ -49,7 +61,7 @@ There are 468 stations that are ADA compliant.
 
 **What proportion of station entrances/exits without vending allow entrance?**
 
-```{r entrance, results='hide'}
+```{r entrance, results= 'hide'}
 
 no_vending=filter(nyvtransit,vending=="NO")
   
@@ -60,7 +72,28 @@ filter(no_vending,entry=="YES")
 
 The proportion of station entrances/exits without vending that allow entrance is 0.38. 
 
+**How many distinct stations serve the A train? Of the stations that serve the A train, how many are ADA compliant?**
+```{r distinct stations, results= 'hide'}
 
+nyvtransit_pivotlong = 
+  pivot_longer(
+    nyvtransit, 
+    route1:route11,
+    names_to = "routenumber", 
+    values_to = "routename")
+  
+nyvtransit_pivotlong_distinct = distinct(nyvtransit_pivotlong, station_name, .keep_all = TRUE)
+
+nyvtransit_pivotlong_distinctADA=
+   filter(nyvtransit_pivotlong,  routename =="A", ada==1) %>%
+   distinct(station_name, .keep_all = TRUE )
+  
+  
+```
+
+There are 16 distinct stations that serve the A train and that are ADA compliant. There are 356 distinct stations that serve the A train. 
+
+**Problem 2**
 
 
 
