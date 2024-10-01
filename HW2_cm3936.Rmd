@@ -95,10 +95,40 @@ There are 16 distinct stations that serve the A train and that are ADA compliant
 
 **Problem 2**
 
+```{r importing Mr Trash data}
+
+mrtrashwheel = read_xlsx("./trash_wheel_collection_data.xlsx", 
+                        sheet = "Mr. Trash Wheel",
+                        range = "A2:N586",
+                        col_names = TRUE,
+                        na = "",
+                        .name_repair = "unique",
+                       ) |> janitor::clean_names() |>
+                            mutate(mrtrashwheel, wheel = 'mrtrashwheel' )
 
 
+mutate(mrtrashwheel, sports_balls_round = as.integer(round(sports_balls))
+       
+professortrash = read_xlsx("./trash_wheel_collection_data.xlsx", 
+                        sheet = "Professor Trash Wheel",
+                        range = "A2:M108",
+                        col_names = TRUE,
+                        na = "",
+                        .name_repair = "unique") |>
+                         janitor::clean_names() |>
+                          mutate(professortrash, wheel = 'professortrash')
 
+gwynndatrash = read_xlsx("./trash_wheel_collection_data.xlsx", 
+                        sheet = "Gwynnda Trash Wheel",
+                        range = "A2:L157",
+                        col_names = TRUE,
+                        na = "",
+                        .name_repair = "unique") |>
+                         janitor::clean_names() |>
+                        mutate(gwynndatrash, wheel = 'gwynndatrash')
 
+       
+```
 
 
 
