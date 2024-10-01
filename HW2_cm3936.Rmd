@@ -1,6 +1,7 @@
 ---
 title: "HW2"
 author: "Carolyn Martinez"
+
 date: "2024-09-29"
 output: github_document
 --- 
@@ -11,7 +12,7 @@ library(tidyverse)
 library(dplyr)
 library(readr)
 ```
-janitor::clean_names(nyvtransit,))
+
 **Problem 1: NYC Transit Data**
 ```{r reading in the data, results= 'hide'}
 nyvtransit = read_csv("subwaydata1.csv", 
@@ -96,39 +97,114 @@ There are 16 distinct stations that serve the A train and that are ADA compliant
 **Problem 2**
 
 ```{r importing Mr Trash data}
-
-mrtrashwheel = read_xlsx("./trash_wheel_collection_data.xlsx", 
-                        sheet = "Mr. Trash Wheel",
+mrtrashwheel = read_xlsx("./trash_wheel_collection_data1.xlsx", 
+                       sheet = "Mr. Trash Wheel",
                         range = "A2:N586",
                         col_names = TRUE,
                         na = "",
-                        .name_repair = "unique",
-                       ) |> janitor::clean_names() |>
-                            mutate(mrtrashwheel, wheel = 'mrtrashwheel' )
+                        .name_repair = "unique") |>
+                         janitor::clean_names() |>
+                        mutate( wheel = 'mrtrashwheel') |> 
+                        mutate( sports_balls_round = (round(sports_balls)))
 
+```
 
-mutate(mrtrashwheel, sports_balls_round = as.integer(round(sports_balls))
-       
-professortrash = read_xlsx("./trash_wheel_collection_data.xlsx", 
+```{r importing professor trash}
+professortrash = read_xlsx("./trash_wheel_collection_data1.xlsx", 
                         sheet = "Professor Trash Wheel",
                         range = "A2:M108",
                         col_names = TRUE,
+                        col_types = c("guess"),
                         na = "",
                         .name_repair = "unique") |>
                          janitor::clean_names() |>
-                          mutate(professortrash, wheel = 'professortrash')
+                         mutate( wheel = 'professortrash')
+```
 
-gwynndatrash = read_xlsx("./trash_wheel_collection_data.xlsx", 
+```{r importing gwynnda trash}
+gwynndatrash = read_xlsx("./trash_wheel_collection_data1.xlsx", 
                         sheet = "Gwynnda Trash Wheel",
                         range = "A2:L157",
                         col_names = TRUE,
+                        col_types = c("guess"),
                         na = "",
                         .name_repair = "unique") |>
-                         janitor::clean_names() |>
-                        mutate(gwynndatrash, wheel = 'gwynndatrash')
-
-       
+                        janitor::clean_names() |>
+                        mutate( wheel = 'gwynndatrash')
 ```
+```{r changing all years into the same class}
+gwynndatrash = gwynndatrash |> mutate(year = as.character(year))
+professortrash = professortrash |> mutate(year = as.character(year))
+mrtrashwheel = mrtrashwheel |> mutate(year = as.character(year))
+```
+
+```{r binding everything}
+alltrashwheels = 
+  bind_rows(gwynndatrash, professortrash, mrtrashwheel)|>
+  janitor::clean_names() 
+```
+
+```{r total weight}
+total_weight = sum(alltrashwheels$weight_tons[alltrashwheels$wheel == "professortrash"], na.rm = TRUE)
+
+total_cigs = sum(alltrashwheels$cigarette_butts[alltrashwheels$wheel =="gwynndatrash"] [alltrashwheels$year == "2022"], na.rm=TRUE)
+```
+
+There are 845 total observations with key variables that include the dumpster number, month, year, date, and other variables quantifying the varity of trash collected in each dumpster. The total weight in tons of trash collected by Professor Trash Wheel in 2022 was `r total_weight`. The total number of cigarette butts collected by Gwynnda in June of 2022 was `r total_cigs`. 
+
+**Problem 3**
+
+```{r importing and cleaning the data sets}
+
+bakers = read_csv("./gbb_datasets/bakers.csv", na = c("NA", "", ".")) |> 
+  janitor::clean_names() |>
+  rename(baker=baker_name)|>
+  drop_na() |>
+  separate(baker, into = c("baker", "last_name"), sep=" ", extra = "merge", fill = "right")
+
+bakes = read_csv("./gbb_datasets/bakes.csv", na = c("NA", "", ".")) |>
+janitor::clean_names()
+
+results =
+  read_excel("./gbb_datasets/results.xls", na = c("NA", "", "."),
+           sheet= "results",
+           range = "A3:E1139",
+           col_types = c("guess")) |>
+            janitor::clean_names()|>
+            drop_na()
+```
+
+```{r merge}
+
+results_bakes_bakers=
+  bakes|>
+left_join(results, by = c("baker","series","episode"))|>
+  left_join(bakers, by = c("baker","series"))|>
+  drop_na()
+
+write.csv(results_bakes_bakers, file = "./gbb_datasets/results_bakes_bakers.csv", row.names = FALSE)
+```
+
+```{r star baker}
+
+star_bakers = results_bakes_bakers |>
+  filter(series >= 5 & series <= 10)|>
+  filter(result == c("STAR BAKER")) |>
+  select(baker, series, episode, result)|>
+  arrange(series, episode)
+```
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
