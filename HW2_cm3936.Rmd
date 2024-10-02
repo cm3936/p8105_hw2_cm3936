@@ -174,7 +174,7 @@ results =
             drop_na()
 ```
 
-```{r merge}
+```{r merge , echo=TRUE}
 
 results_bakes_bakers=
   bakes|>
@@ -185,26 +185,33 @@ left_join(results, by = c("baker","series","episode"))|>
 write.csv(results_bakes_bakers, file = "./gbb_datasets/results_bakes_bakers.csv", row.names = FALSE)
 ```
 
-```{r star baker}
+For the data cleaning process, I cleaned the names using the `janitor` package, renaming and arrnaging the columns to prepare to merge, and finally removing the rows with missing data. Then the merging of the data to create one cohesive dataset required the changing of column names to have oone common column among all the individual datasets. The final data set has all the relevant variables and each showstopper and bake is an individual data point. I wonder if there were any changes to the data set such as pivots to make the bakers into the columms. I still do not know when to make this decision and I would like more examples and scenarios where this is best. 
 
+
+
+```{r star baker, echo=FALSE}
 star_bakers = results_bakes_bakers |>
   filter(series >= 5 & series <= 10)|>
-  filter(result == c("STAR BAKER")) |>
+  filter(result %in% c("STAR BAKER","WINNER")) |>
   select(baker, series, episode, result)|>
   arrange(series, episode)
+
+print(star_bakers)
 ```
 
+The overall winners were not surprising because they were consistently named star baker. Not many winners were surprising because they followed the pattern of being consecutive star baker and being declared winner. 
 
 
+```{r viewers}
+viewers = read_csv("./gbb_datasets/viewers.csv", na = c("NA", "", ".")) |> 
+  janitor::clean_names() |>
+    drop_na()
 
+print(viewers)
 
+```
 
-
-
-
-
-
-
+The average viewership for season 1 is `r mean(viewers$series_1)` and for season 5 it is `r mean(viewers$series_5)`.
 
 
 
